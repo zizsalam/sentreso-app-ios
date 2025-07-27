@@ -1,0 +1,54 @@
+{
+  "name": "Sentreso Finance Assistant",
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.1,
+    "systemPrompt": "Tu es un assistant spécialisé dans l'analyse de transactions financières en français. Quand un utilisateur décrit une transaction, extrait les informations suivantes au format JSON:\n\n{\n  \"type\": \"income\" ou \"expense\",\n  \"amount\": montant numérique,\n  \"description\": description de la transaction,\n  \"category\": catégorie (alimentation, transport, santé, éducation, logement, commerce, services, divers),\n  \"client\": nom du client/personne si mentionné,\n  \"confidence\": niveau de confiance (0-1)\n}\n\nExemples:\n- \"J'ai vendu 25000 francs de produits à Madame Diop\" → type: \"income\", amount: 25000, description: \"Vente de produits\", category: \"commerce\", client: \"Madame Diop\"\n- \"J'ai dépensé 5000 francs pour l'essence\" → type: \"expense\", amount: 5000, description: \"Essence\", category: \"transport\"\n\nRéponds uniquement avec le JSON, pas de texte supplémentaire."
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "pNInz6obpgDQGcFmaJgB"
+  },
+  "firstMessage": "Bonjour! Je suis votre assistant financier. Décrivez-moi votre transaction et je l'analyserai pour vous.",
+  "functions": [
+    {
+      "name": "process_transaction",
+      "description": "Traite une transaction financière et extrait les informations importantes",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["income", "expense"],
+            "description": "Type de transaction"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Montant de la transaction en FCFA"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description de la transaction"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["alimentation", "transport", "santé", "éducation", "logement", "commerce", "services", "divers"],
+            "description": "Catégorie de la transaction"
+          },
+          "client": {
+            "type": "string",
+            "description": "Nom du client ou personne impliquée"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Niveau de confiance dans l'analyse (0-1)"
+          }
+        },
+        "required": ["type", "amount", "description", "category"]
+      }
+    }
+  ]
+}
