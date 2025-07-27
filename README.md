@@ -1,65 +1,70 @@
-# Sentreso Finance App
+# Sentreso Finance 📱
 
-## Quick Setup Instructions
+A French financial management app designed for African markets, featuring voice transactions and FCFA currency support.
 
-1. Create a new folder on your computer
-2. Copy all files from this project
-3. Run these commands:
+## 🌟 Features
 
+- **Voice Transactions**: Record transactions by voice in French
+- **Local Currency**: FCFA (CFA Franc) support
+- **Offline Functionality**: Works without internet connection
+- **French Localization**: Complete French interface
+- **Analytics**: Monthly overview and category breakdown
+- **Simple Onboarding**: No complex authentication required
+
+## 🚀 Tech Stack
+
+- **React Native** with Expo
+- **TypeScript**
+- **AsyncStorage** for local data persistence
+- **React Navigation** for app navigation
+- **Voice Recognition** for transaction recording
+
+## 📱 Screenshots
+
+- Dashboard with balance overview
+- Voice recording interface
+- Transaction management
+- Analytics and reports
+
+## 🛠️ Development
+
+### Prerequisites
+- Node.js 18+
+- Expo CLI
+- iOS Simulator or physical device
+
+### Installation
 ```bash
 npm install
 npx expo start
 ```
 
-## If you still get _interopRequireDefault error:
-
+### Building for iOS
 ```bash
-# Try these fixes:
-npm install @babel/runtime
-# OR
-npm install expo-router@3.5.23
-# OR
-npx expo install --fix
+eas build --platform ios --profile production
 ```
 
-## Project Structure
+## 📦 App Store
 
-```
-sentreso-finance-app/
-├── app/
-│   ├── _layout.tsx
-│   ├── (tabs)/
-│   │   ├── _layout.tsx
-│   │   ├── index.tsx
-│   │   ├── add.tsx
-│   │   ├── voice.tsx
-│   │   └── analytics.tsx
-│   └── +not-found.tsx
-├── contexts/
-│   └── TransactionContext.tsx
-├── hooks/
-│   └── useFrameworkReady.ts
-├── services/
-│   └── VapiService.ts
-├── types/
-│   └── receipt.ts
-├── package.json
-├── babel.config.js
-├── app.json
-├── tsconfig.json
-└── metro.config.js
-```
+- **Bundle ID**: com.zizsalam.sentresofinance
+- **Version**: 1.0.0
+- **Build**: 40
+- **Platform**: iOS 13.0+
 
-## Features
-- ✅ Transaction management
-- ✅ Voice recording (mock implementation)
-- ✅ Analytics dashboard
-- ✅ Tab navigation
-- ✅ Context state management
+## 🔒 Privacy
 
-## Troubleshooting
-If you encounter issues, try:
-1. Delete node_modules and package-lock.json
-2. Run `npm install`
-3. Run `npx expo doctor`
-4. Run `npx expo start --clear`
+This app stores all data locally on your device. No personal information is transmitted to external servers.
+
+## 📄 License
+
+© 2025 Sentreso Technologies
+
+## 📞 Contact
+
+- **Developer**: Abdoul Kane
+- **Email**: kaneaziz@gmail.com
+- **Phone**: +221774454343
+
+---
+
+Built with ❤️ for the African market
