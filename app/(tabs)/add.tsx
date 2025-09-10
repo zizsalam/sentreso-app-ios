@@ -27,7 +27,7 @@ export default function AddTab() {
 
   const handleSubmit = async () => {
     console.log('📝 Attempting to submit transaction...', { amount, description, category, type });
-    
+
     if (!amount || !description || !category) {
       Alert.alert('Erreur', 'Veuillez remplir le montant, la description et choisir une catégorie');
       return;
@@ -51,7 +51,7 @@ export default function AddTab() {
       };
 
       console.log('💾 Adding transaction:', newTransaction);
-      
+
       // Add the transaction
       addTransaction(newTransaction);
 
@@ -67,9 +67,9 @@ export default function AddTab() {
         setDescription('');
         setCategory('');
         setIsSubmitting(false);
-        
+
         // Navigate back to home to see the new transaction
-        router.push('/(tabs)/');
+        router.push('/');
       }, 2000);
 
     } catch (error) {
@@ -111,7 +111,7 @@ export default function AddTab() {
 
       {/* Transaction Type Selector */}
       <View style={styles.typeSelector}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.typeButton, type === 'expense' && styles.typeButtonActive]}
           onPress={() => setType('expense')}
         >
@@ -119,7 +119,7 @@ export default function AddTab() {
             Dépense
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.typeButton, type === 'income' && styles.typeButtonActive]}
           onPress={() => setType('income')}
         >
@@ -183,8 +183,8 @@ export default function AddTab() {
       </View>
 
       {/* Submit Button */}
-      <TouchableOpacity 
-        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+      <TouchableOpacity
+        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
         onPress={handleSubmit}
         disabled={isSubmitting}
       >
@@ -195,7 +195,7 @@ export default function AddTab() {
       </TouchableOpacity>
 
       {/* Voice Alternative */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.voiceAlternative}
         onPress={() => router.push('/(tabs)/voice')}
       >

@@ -1,0 +1,29 @@
+# Configuration Email Supabase pour Sentreso Finance
+# Copiez ce fichier vers email-config.env et remplissez vos vraies valeurs
+
+# URL de votre projet Supabase
+SUPABASE_URL=https://your-project-id.supabase.co
+
+# Clé anonyme Supabase (publique)
+SUPABASE_ANON_KEY=your-anon-key-here
+
+# Clé de service Supabase (privée - pour les opérations admin)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# Configuration Email
+SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_USERNAME=your-mailgun-username
+SMTP_PASSWORD=your-mailgun-password
+
+# Adresses email Sentreso
+SUPPORT_EMAIL=support@sentreso.com
+PERSONAL_EMAIL=abdoul@sentreso.com
+
+# Configuration du domaine
+DOMAIN=sentreso.com
+SITE_URL=https://sentreso.com
+
+# Configuration Vapi (si utilisé)
+VAPI_API_KEY=your-vapi-api-key
+VAPI_ASSISTANT_ID=your-vapi-assistant-id

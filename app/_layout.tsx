@@ -1,12 +1,94 @@
 import { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, TextInput } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, TextInput, Alert } from 'react-native';
 import { TransactionProvider, useTransactions } from '@/contexts/TransactionContext';
 import { UserProvider, useUserDetails } from '@/contexts/UserContext';
 import { TrendingUp, ArrowUpRight, ArrowDownLeft, ChartBar as BarChart3, Plus, Mic } from 'lucide-react-native';
 // @ts-ignore: No type definitions for react-native-voice
 import Voice from 'react-native-voice';
+function DistributorDashboard({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.screenHeader}>
+        <Text style={styles.screenTitle}>Tableau de bord Distributeur</Text>
+        <View style={styles.placeholder} />
+      </View>
 
-type Screen = 'home' | 'add' | 'voice' | 'analytics' | 'transactions' | 'edit';
+      <ScrollView style={styles.formScrollView}>
+        <View style={{ padding: 20 }}>
+          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#2563EB' }]} onPress={() => onNavigate('distCreate')}>
+            <Text style={styles.primaryButtonText}>Enregistrer un marchand</Text>
+          </TouchableOpacity>
+
+          <View style={{ marginTop: 24 }}>
+            <Text style={styles.sectionTitle}>Mes marchands</Text>
+            <Text style={{ color: '#6B7280' }}>Liste à venir (intégration REST)</Text>
+          </View>
+
+          <View style={{ marginTop: 24 }}>
+            <Text style={styles.sectionTitle}>Productivité</Text>
+            <Text style={{ color: '#6B7280' }}>Vous avez enregistré X marchands</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function DistributorCreate({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [hasAccount, setHasAccount] = useState(false);
+  const [merchantEmail, setMerchantEmail] = useState('');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.screenHeader}>
+        <TouchableOpacity style={styles.backButton} onPress={() => onNavigate('distDashboard')}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.screenTitle}>Enregistrer un marchand</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <ScrollView style={styles.formScrollView}>
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Nom *</Text>
+            <TextInput style={styles.textInput} value={name} onChangeText={setName} placeholder="Boutique A" />
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Téléphone / Email (optionnel)</Text>
+            <TextInput style={styles.textInput} value={contact} onChangeText={setContact} placeholder="77 123 45 67 / email@exemple.com" />
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <TouchableOpacity style={[styles.secondaryButton, { justifyContent: 'flex-start' }]} onPress={() => setHasAccount(!hasAccount)}>
+              <Text style={styles.secondaryButtonText}>{hasAccount ? '☑' : '☐'} Le marchand a déjà un compte</Text>
+            </TouchableOpacity>
+          </View>
+
+          {hasAccount && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email du marchand</Text>
+              <TextInput style={styles.textInput} value={merchantEmail} onChangeText={setMerchantEmail} placeholder="merchant@email.com" />
+            </View>
+          )}
+
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#2563EB' }]} onPress={() => onNavigate('distDashboard')}>
+              <Text style={styles.primaryButtonText}>Enregistrer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => onNavigate('distDashboard')}>
+              <Text style={styles.secondaryButtonText}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+type Screen = 'home' | 'add' | 'voice' | 'analytics' | 'transactions' | 'edit' | 'distDashboard' | 'distCreate';
 
 function TabBar({ currentScreen, onNavigate }: { currentScreen: Screen; onNavigate: (screen: Screen) => void }) {
   return (
@@ -56,6 +138,7 @@ function TabBar({ currentScreen, onNavigate }: { currentScreen: Screen; onNaviga
 
 function HomeScreen({ onNavigate }: { onNavigate: (screen: Screen, params?: any) => void }) {
   const { getTotalBalance, getMonthlyIncome, getMonthlyExpenses, getRecentTransactions } = useTransactions();
+  const { clearUserDetails } = useUserDetails();
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('fr-FR').format(amount);
@@ -69,7 +152,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (screen: Screen, params?: any)
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header with Sentreso logo */}
+        {/* Header with Sentreso logo and logout button */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
@@ -77,6 +160,52 @@ function HomeScreen({ onNavigate }: { onNavigate: (screen: Screen, params?: any)
             </View>
           </View>
           <View style={styles.headerSpacer} />
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.deleteAccountButton}
+              onPress={() => {
+                Alert.alert(
+                  "Supprimer le compte",
+                  "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+                  [
+                    { text: "Annuler", style: "cancel" },
+                    {
+                      text: "Supprimer",
+                      style: "destructive",
+                      onPress: () => {
+                        clearUserDetails();
+                        Alert.alert("Compte supprimé", "Votre compte a été supprimé avec succès.");
+                      }
+                    }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.deleteAccountButtonText}>🗑️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={() => {
+                Alert.alert(
+                  "Déconnexion",
+                  "Êtes-vous sûr de vouloir vous déconnecter ?",
+                  [
+                    { text: "Annuler", style: "cancel" },
+                    {
+                      text: "Se déconnecter",
+                      style: "destructive",
+                      onPress: () => {
+                        clearUserDetails();
+                        Alert.alert("Déconnexion", "Vous avez été déconnecté avec succès.");
+                      }
+                    }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Greeting */}
@@ -838,8 +967,8 @@ function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
 
   const handleSubmit = async () => {
     setError('');
-    if (!name.trim() || !phone.trim()) {
-      setError('Le nom et le numéro de téléphone sont obligatoires.');
+    if (!name.trim()) {
+      setError('Le nom est obligatoire.');
       return;
     }
     setIsSubmitting(true);
@@ -873,7 +1002,7 @@ function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
           />
           <TextInput
             style={styles.textInput}
-            placeholder="Téléphone *"
+            placeholder="Téléphone (optionnel)"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
@@ -889,6 +1018,8 @@ function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
           <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isSubmitting}>
             <Text style={styles.primaryButtonText}>{isSubmitting ? 'Enregistrement...' : 'Continuer'}</Text>
           </TouchableOpacity>
+
+
         </View>
       </View>
     </SafeAreaView>
@@ -919,10 +1050,21 @@ function AppContent() {
     return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
   }
 
+  // Role-aware default screen: distributors land on their dashboard
+  useEffect(() => {
+    if (userDetails?.role === 'distributor') {
+      setCurrentScreen('distDashboard');
+    }
+  }, [userDetails?.role]);
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'home':
         return <HomeScreen onNavigate={setCurrentScreen} />;
+      case 'distDashboard':
+        return <DistributorDashboard onNavigate={setCurrentScreen} />;
+      case 'distCreate':
+        return <DistributorCreate onNavigate={setCurrentScreen} />;
       case 'add':
         return <AddScreen onNavigate={setCurrentScreen} />;
       case 'voice':
@@ -980,19 +1122,7 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 80,
   },
-  logoutButton: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#EF4444',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  logoutText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+
   logoContainer: {
     alignItems: 'flex-start',
   },
@@ -1122,11 +1252,16 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: '#10B981',
     borderRadius: 12,
-    padding: 16,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonText: {
     color: '#FFFFFF',
@@ -1347,9 +1482,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     fontSize: 16,
     color: '#1F2937',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -2021,14 +2162,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   modalDeleteButton: {
-    flex: 1,
-    backgroundColor: '#EF4444',
+    backgroundColor: 'transparent',
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EF4444',
   },
   modalDeleteButtonText: {
-    color: '#FFFFFF',
+    color: '#EF4444',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -2043,7 +2185,7 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 28,
+    padding: 32,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -2056,16 +2198,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   onboardingTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 12,
+    marginBottom: 16,
+    textAlign: 'center',
   },
   onboardingSubtitle: {
     fontSize: 16,
     color: '#6B7280',
-    marginBottom: 24,
+    marginBottom: 32,
     textAlign: 'center',
+    lineHeight: 22,
   },
   errorText: {
     color: '#EF4444',
@@ -2089,5 +2233,36 @@ const styles = StyleSheet.create({
     color: '#B91C1C',
     fontSize: 13,
     fontFamily: 'monospace',
+  },
+  logoutButton: {
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 16,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deleteAccountButton: {
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 36,
+    height: 36,
+  },
+  deleteAccountButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
   },
 });

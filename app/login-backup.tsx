@@ -30,23 +30,6 @@ export default function UserDetailsScreen() {
     }
   }, [userDetails, isLoading]);
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Supprimer le compte",
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => {
-            Alert.alert("Compte supprimé", "Votre compte a été supprimé avec succès.");
-          }
-        }
-      ]
-    );
-  };
-
   const handleSubmit = async () => {
     if (!name.trim()) {
       Alert.alert('Erreur', 'Veuillez entrer votre nom');
@@ -94,13 +77,12 @@ export default function UserDetailsScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
-
-      </View>
+          </View>
           <Text style={styles.title}>Bienvenue sur Sentreso</Text>
           <Text style={styles.subtitle}>
             Veuillez renseigner vos informations pour continuer
           </Text>
-      </View>
+        </View>
 
         <View style={styles.form}>
           <TextInput
@@ -140,7 +122,7 @@ export default function UserDetailsScreen() {
               {loading ? 'Chargement...' : 'Continuer'}
             </Text>
           </TouchableOpacity>
-      </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

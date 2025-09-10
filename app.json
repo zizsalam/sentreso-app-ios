@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSAppTransportSecurity": {
@@ -18,10 +18,11 @@
         "NSMicrophoneUsageDescription": "Cette application utilise le microphone pour enregistrer vos transactions vocales.",
         "NSSpeechRecognitionUsageDescription": "Cette application utilise la reconnaissance vocale pour convertir votre voix en texte lors de l’ajout de transactions.",
         "NSPhotoLibraryUsageDescription": "Cette application peut accéder à votre bibliothèque de photos si vous souhaitez ajouter des reçus ou des justificatifs à vos transactions.",
+        "NSUserTrackingUsageDescription": "Cette application peut demander l'autorisation de suivre votre activité pour améliorer votre expérience et personnaliser le contenu.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.zizsalam.sentresofinance",
-      "buildNumber": "25"
+      "buildNumber": "33"
     },
     "android": {
       "adaptiveIcon": {
@@ -31,9 +32,11 @@
       "icon": "./assets/images/icon.png",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.INTERNET"
       ],
-      "package": "com.zizsalam.sentresofinance"
+      "package": "com.zizsalam.sentresofinance",
+      "versionCode": 33
     },
     "web": {
       "bundler": "metro",
