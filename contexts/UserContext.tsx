@@ -7,6 +7,7 @@ interface UserDetails {
   name: string;
   phone: string;
   email?: string;
+  role?: 'merchant' | 'distributor';
 }
 
 interface UserContextType {

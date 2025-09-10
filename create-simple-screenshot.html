@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur Screenshot iPad 13"</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            width: 2048px;
+            height: 2732px;
+            background: #f8fafc;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            border: 8px solid #1f2937;
+            margin: 20px;
+        }
+
+        .status-bar {
+            height: 60px;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 60px 40px 40px;
+            color: white;
+        }
+
+        .welcome-text {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .balance-section {
+            margin-top: 40px;
+        }
+
+        .balance-label {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .balance-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.income {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .stat-icon.expense {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .stat-amount {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-amount.positive {
+            color: #10b981;
+        }
+
+        .stat-amount.negative {
+            color: #ef4444;
+        }
+
+        .stat-period {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 24px 32px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6366f1;
+            border: 2px solid #e5e7eb;
+        }
+
+        .voice-feature {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .voice-icon {
+            width: 64px;
+            height: 64px;
+            background: #d1fae5;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .voice-content {
+            flex: 1;
+        }
+
+        .voice-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .voice-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .transactions-section {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 24px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .transaction-icon.income {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .transaction-icon.expense {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .transaction-category {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .transaction-amount {
+            text-align: right;
+        }
+
+        .transaction-amount-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .transaction-amount-text.positive {
+            color: #10b981;
+        }
+
+        .transaction-amount-text.negative {
+            color: #ef4444;
+        }
+
+        .transaction-date {
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tab-item.active {
+            color: #10b981;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+            margin: 20px;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        @media (max-width: 2100px) {
+            .container {
+                transform: scale(0.8);
+                transform-origin: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📱 Générateur Screenshot iPad 13"</h2>
+        <p><strong>Dimensions exactes :</strong> 2048 × 2732px</p>
+        <p><strong>Format :</strong> PNG pour App Store</p>
+        <p><strong>Instructions :</strong> Cliquez sur "Télécharger" puis utilisez Cmd+Shift+4 (Mac) ou Win+Shift+S (Windows)</p>
+    </div>
+
+    <a href="#" class="download-btn" onclick="downloadScreenshot()">📥 Télécharger Screenshot iPad 13"</a>
+
+    <div class="container" id="ipad-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>Sentreso Finance</span>
+            <span>100%</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="welcome-text">Bonjour, 👋</div>
+            <div class="balance-section">
+                <div class="balance-label">Solde Total</div>
+                <div class="balance-amount">1,250,000 FCFA</div>
+                <div class="balance-change">
+                    <span>📈</span>
+                    <span>+12% ce mois</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon income">📈</div>
+                        <div class="stat-label">Revenus</div>
+                    </div>
+                    <div class="stat-amount positive">+850,000 FCFA</div>
+                    <div class="stat-period">Ce mois</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon expense">📉</div>
+                        <div class="stat-label">Dépenses</div>
+                    </div>
+                    <div class="stat-amount negative">-320,000 FCFA</div>
+                    <div class="stat-period">Ce mois</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="#" class="btn btn-primary">
+                    <span>➕</span>
+                    <span>Nouvelle Transaction</span>
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    <span>📊</span>
+                    <span>Voir les Stats</span>
+                </a>
+            </div>
+
+            <!-- Voice Feature -->
+            <div class="voice-feature">
+                <div class="voice-icon">🎤</div>
+                <div class="voice-content">
+                    <div class="voice-title">🎤 Créer un reçu vocal</div>
+                    <div class="voice-subtitle">Parlez pour générer un reçu en 5 secondes</div>
+                </div>
+                <span>➡️</span>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="transactions-section">
+                <div class="section-title">Transactions Récentes</div>
+
+                <div class="transaction-item">
+                    <div class="transaction-icon income">📈</div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">Salaire</div>
+                        <div class="transaction-category">Revenus</div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-amount-text positive">+450,000 FCFA</div>
+                        <div class="transaction-date">Aujourd'hui</div>
+                    </div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-icon expense">📉</div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">Courses Supermarché</div>
+                        <div class="transaction-category">Alimentation</div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-amount-text negative">-85,000 FCFA</div>
+                        <div class="transaction-date">Hier</div>
+                    </div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-icon income">📈</div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">Freelance</div>
+                        <div class="transaction-category">Revenus</div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-amount-text positive">+200,000 FCFA</div>
+                        <div class="transaction-date">Il y a 2 jours</div>
+                    </div>
+                </div>
+
+                <div class="transaction-item">
+                    <div class="transaction-icon expense">📉</div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">Essence</div>
+                        <div class="transaction-category">Transport</div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-amount-text negative">-45,000 FCFA</div>
+                        <div class="transaction-date">Il y a 3 jours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <div class="tab-item active">
+                <div class="tab-icon">🏠</div>
+                <div>Accueil</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">➕</div>
+                <div>Ajouter</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">📊</div>
+                <div>Analytics</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">🎤</div>
+                <div>Voix</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadScreenshot() {
+            alert('Pour capturer cette image :\n\n1. Mac : Cmd + Shift + 4\n2. Windows : Win + Shift + S\n3. Sélectionnez la zone de l\'iPad\n4. L\'image sera sauvegardée automatiquement');
+        }
+
+        // Add keyboard shortcut detection
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === '4') {
+                alert('Parfait ! Maintenant sélectionnez la zone de l\'iPad pour capturer l\'image.');
+            }
+        });
+    </script>
+</body>
+</html>

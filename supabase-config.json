@@ -1,0 +1,34 @@
+{
+  "project_id": "avltdtbgantbxbrqdxge",
+  "api_url": "https://avltdtbgantbxbrqdxge.supabase.co",
+  "anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2bHRkdGJnYW50YnhicnFkeGdlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDg2MjkyNSwiZXhwIjoyMDY2NDM4OTI1fQ.uTWh8tp56TrZToKbcbuHdisxFxI38PKWvmZQ5WTw_Tk",
+  "service_role_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2bHRkdGJnYW50YnhicnFkeGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjI5MjUsImV4cCI6MjA2NjQzODkyNX0.x_tYhcxmxENG_7qAimEWh7oi5nQSnrdp2fwyW1b4oqc",
+  "email": {
+    "smtp": {
+      "host": "smtp.mailgun.org",
+      "port": 587,
+      "username": "kaneaziz@gmail.com",
+      "password": "cQfJ!R2tp42KqV@",
+      "sender_name": "Sentreso Finance",
+      "sender_email": "support@sentreso.com"
+    },
+    "templates": {
+      "confirm_signup": {
+        "subject": "Bienvenue sur Sentreso Finance !",
+        "html": "<h2>Bienvenue sur Sentreso Finance !</h2>\n<p>Bonjour {{ .Name }},</p>\n<p>Merci de vous être inscrit sur Sentreso Finance. Votre compte a été créé avec succès.</p>\n<p>Pour toute question, contactez-nous à support@sentreso.com</p>\n<p>Cordialement,<br>L'équipe Sentreso</p>"
+      },
+      "recovery": {
+        "subject": "Réinitialisation de votre mot de passe - Sentreso Finance",
+        "html": "<h2>Réinitialisation de votre mot de passe</h2>\n<p>Bonjour {{ .Name }},</p>\n<p>Vous avez demandé la réinitialisation de votre mot de passe.</p>\n<p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>\n<a href=\"{{ .ConfirmationURL }}\">Réinitialiser mon mot de passe</a>\n<p>Ce lien expire dans 24 heures.</p>\n<p>Cordialement,<br>L'équipe Sentreso</p>"
+      }
+    }
+  },
+  "domains": {
+    "primary": "sentreso.com",
+    "site_url": "https://sentreso.com",
+    "redirect_urls": [
+      "https://sentreso.com/auth/callback",
+      "https://sentreso.com/reset-password"
+    ]
+  }
+}
