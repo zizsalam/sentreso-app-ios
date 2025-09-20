@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { supabaseData } from '../services/supabaseClient';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
+import { fetchMyTransactions, createTransaction as createTx, subscribeMyTransactions, Tx } from '../services/transactions';
 
 export interface Transaction {
   id: string;
@@ -24,58 +24,67 @@ interface TransactionContextType {
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
-  // Start with empty transactions array - no seed data
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Load transactions from Supabase on mount (optional)
+  const load = async () => {
+    setLoading(true);
+    try {
+      const rows: Tx[] = await fetchMyTransactions(500);
+      const normalized: Transaction[] = rows.map((t) => ({
+        id: t.id,
+        amount: t.amount,
+        description: t.description ?? '',
+        category: t.category ?? '',
+        type: t.type,
+        date: t.created_at.split('T')[0],
+        createdAt: new Date(t.created_at),
+      }));
+      setTransactions(normalized);
+    } catch (e) {
+      console.error('Failed to load transactions', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        const data = await supabaseData.getTransactions();
-        if (data && data.length > 0) {
-          const formattedTransactions = data.map((item: any) => ({
-            id: item.id,
-            amount: item.amount,
-            description: item.description,
-            category: item.category,
-            type: item.type,
-            date: item.date,
-            createdAt: new Date(item.created_at)
-          }));
-          setTransactions(formattedTransactions);
-        }
-      } catch (error) {
-        console.log('No Supabase data or error loading:', error);
-        // Continue with empty transactions if Supabase fails
-      }
-    };
-
-    loadTransactions();
+    load();
+    const unsubscribe = subscribeMyTransactions((row) => {
+      setTransactions((prev) => {
+        if (prev.find((p) => p.id === row.id)) return prev;
+        const next: Transaction = {
+          id: row.id,
+          amount: row.amount,
+          description: row.description ?? '',
+          category: row.category ?? '',
+          type: row.type,
+          date: row.created_at.split('T')[0],
+          createdAt: new Date(row.created_at),
+        };
+        return [next, ...prev];
+      });
+    });
+    return () => { void unsubscribe(); };
   }, []);
 
   const addTransaction = async (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
-    const newTransaction: Transaction = {
-      ...transactionData,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      createdAt: new Date()
+    const created = await createTx({
+      amount: transactionData.amount,
+      description: transactionData.description,
+      category: transactionData.category,
+      type: transactionData.type,
+    } as any);
+    const next: Transaction = {
+      id: created.id,
+      amount: created.amount,
+      description: created.description ?? '',
+      category: created.category ?? '',
+      type: created.type,
+      date: created.created_at.split('T')[0],
+      createdAt: new Date(created.created_at),
     };
-
-    setTransactions(prev => [newTransaction, ...prev]);
-
-    // Optionally sync with Supabase
-    try {
-      await supabaseData.addTransaction({
-        id: newTransaction.id,
-        amount: newTransaction.amount,
-        description: newTransaction.description,
-        category: newTransaction.category,
-        type: newTransaction.type,
-        date: newTransaction.date,
-        created_at: newTransaction.createdAt.toISOString()
-      });
-    } catch (error) {
-      console.log('Failed to sync with Supabase, continuing with local storage');
-    }
+    setTransactions(prev => [next, ...prev]);
   };
 
   const getTotalBalance = () => {
@@ -118,36 +127,20 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .slice(0, limit);
   };
 
-  const syncWithSupabase = async () => {
-    try {
-      const data = await supabaseData.getTransactions();
-      if (data && data.length > 0) {
-        const formattedTransactions = data.map((item: any) => ({
-          id: item.id,
-          amount: item.amount,
-          description: item.description,
-          category: item.category,
-          type: item.type,
-          date: item.date,
-          createdAt: new Date(item.created_at)
-        }));
-        setTransactions(formattedTransactions);
-      }
-    } catch (error) {
-      console.error('Error syncing with Supabase:', error);
-    }
-  };
+  const syncWithSupabase = async () => { await load(); };
+
+  const value = useMemo(() => ({
+    transactions,
+    addTransaction,
+    getTotalBalance,
+    getMonthlyIncome,
+    getMonthlyExpenses,
+    getRecentTransactions,
+    syncWithSupabase,
+  }), [transactions]);
 
   return (
-    <TransactionContext.Provider value={{
-      transactions,
-      addTransaction,
-      getTotalBalance,
-      getMonthlyIncome,
-      getMonthlyExpenses,
-      getRecentTransactions,
-      syncWithSupabase
-    }}>
+    <TransactionContext.Provider value={value}>
       {children}
     </TransactionContext.Provider>
   );
