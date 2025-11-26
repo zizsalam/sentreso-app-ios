@@ -12,7 +12,13 @@
     },
     "production": {
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "medium"
+      }
+    },
+    "apk-direct": {
+      "android": {
+        "buildType": "apk",
+        "distribution": "internal"
       }
     }
   },

@@ -16,6 +16,7 @@ import {
 import { router } from 'expo-router';
 // @ts-ignore
 import logo from '../assets/images/icon.png';
+import { useAuthManager } from '@/contexts/AuthManager';
 import { supabase } from '@/services/supabaseClient';
 
 export default function LoginScreen() {
@@ -23,49 +24,71 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState('');
   const [showReset, setShowReset] = useState(false);
   const emailRef = useRef<TextInput>(null);
   const passRef = useRef<TextInput>(null);
+  const { signIn, resetPassword, loading } = useAuthManager();
 
+  const validatePhone = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    return digits.length >= 8 && digits.length <= 15;
+  };
   const validateEmail = (value: string) => /.+@.+\..+/.test(value.trim());
-  const emailError = email.length > 0 && !validateEmail(email) ? 'Adresse e-mail invalide' : '';
-  const passwordError = password.length > 0 && password.length < 8 ? 'Mot de passe requis (8 caractères minimum)' : '';
+  const emailValid = email.length > 0 && validateEmail(email);
+  const emailError = email.length > 0 && !emailValid ? 'Adresse e-mail invalide' : '';
+  const passwordError = password.length > 0 && password.length < 6 ? 'Mot de passe requis (6 caractères minimum)' : '';
 
   const handleSubmit = async () => {
     setAuthError(null);
+
+    // Traditional email/password login only (stable approach)
+
+    // Require email for login
     if (!validateEmail(email)) {
       emailRef.current?.focus();
       return;
     }
-    if (password.length < 8) {
+    if (password.length < 6) {
       passRef.current?.focus();
       return;
     }
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) {
-        if (error.message?.toLowerCase().includes('network')) {
-          setAuthError('Connexion impossible. Vérifiez votre connexion internet.');
-        } else {
-          setAuthError('Identifiants incorrects. Vérifiez votre e-mail et mot de passe.');
-        }
-        return;
-      }
+      await signIn(email, password);
 
+      // Get user data for role determination
       const { data: userData } = await supabase.auth.getUser();
-      const role = (userData?.user?.user_metadata as any)?.role;
+      let role = (userData?.user?.user_metadata as any)?.role as 'distributor' | 'merchant' | undefined;
 
-      // Role-aware routing within current nav
-      if (role === 'distributor') {
-        // Use analytics as the distributor dashboard for now
-        router.replace('/(tabs)/analytics');
-      } else {
-        router.replace('/');
+      // Fallback: déduire le rôle depuis la base
+      if (!role && userData?.user?.id) {
+        const uid = userData.user.id;
+        // Si l'utilisateur a onboardé au moins un merchant, on le considère "distributeur"
+        const { data: onboarded } = await supabase
+          .from('customers')
+          .select('id', { count: 'exact', head: false })
+          .eq('created_by', uid)
+          .limit(1);
+        if (onboarded && onboarded.length > 0) {
+          role = 'distributor';
+        } else {
+          role = 'merchant';
+        }
       }
+
+      // Check if user needs onboarding (userType selection)
+      // Note: UserContext may not be loaded yet, so we redirect to onboarding
+      // which will check and redirect to tabs if userType is already set
+      router.replace('/onboarding');
     } catch (e: any) {
-      setAuthError('Connexion impossible. Vérifiez votre connexion internet.');
+      if (e.message?.toLowerCase().includes('network')) {
+        setAuthError('Connexion impossible. Vérifiez votre connexion internet.');
+      } else {
+        setAuthError('Identifiants incorrects. Vérifiez votre e-mail et mot de passe.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -77,9 +100,7 @@ export default function LoginScreen() {
       return;
     }
     try {
-      await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: 'sentreso://reset-password',
-      });
+      await resetPassword(email);
       Alert.alert('E-mail de réinitialisation envoyé.');
       setShowReset(false);
     } catch (e) {
@@ -103,6 +124,35 @@ export default function LoginScreen() {
               <Text style={styles.errorBannerText}>{authError}</Text>
             </View>
           ) : null}
+          {/* Debug banner to confirm route renders */}
+          <View style={{ backgroundColor: '#EFF6FF', borderColor: '#93C5FD', borderWidth: 1, padding: 8, borderRadius: 8, marginBottom: 12 }}>
+            {/* Demo mode helper (shown only if EXPO_PUBLIC_DEMO=true) */}
+            {process.env.EXPO_PUBLIC_DEMO === 'true' ? (
+              <View style={{ gap: 8 }}>
+                <Text style={{ color: '#1F2937', fontWeight: '600' }}>Mode Démo</Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={[styles.secondaryButton, { flex: 1 }]}
+                    onPress={() => { setEmail('apple.merchant@sentreso.com'); setPassword('Apple123!'); }}
+                  >
+                    <Text style={styles.secondaryButtonText}>Remplir Marchand</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.secondaryButton, { flex: 1 }]}
+                    onPress={() => { setEmail('apple.distributor@sentreso.com'); setPassword('Apple123!'); }}
+                  >
+                    <Text style={styles.secondaryButtonText}>Remplir Distributeur</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                  style={[styles.primaryButton]}
+                  onPress={handleSubmit}
+                >
+                  <Text style={styles.primaryButtonText}>Se connecter (Démo)</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
 
           <View style={styles.form}>
             <Text style={styles.label}>Adresse e-mail</Text>
@@ -156,6 +206,10 @@ export default function LoginScreen() {
               <TouchableOpacity onPress={() => setShowReset(true)} accessibilityLabel="Mot de passe oublié ?" accessible>
                 <Text style={styles.linkText}>Mot de passe oublié ?</Text>
               </TouchableOpacity>
+              <View style={{ height: 4 }} />
+              <TouchableOpacity onPress={() => router.push('/register' as any)} accessibilityLabel="Aller à l'inscription" accessible>
+                <Text style={styles.linkText}>Créer un compte</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -164,7 +218,7 @@ export default function LoginScreen() {
               <Text style={styles.resetTitle}>Réinitialiser le mot de passe</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Votre adresse e-mail"
+                placeholder="Votre adresse e-mail ou téléphone"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -314,5 +368,21 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 14,
     fontWeight: '700',
+  },
+  helperText: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  linkButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+  },
+  linkButtonText: {
+    color: '#2563EB',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

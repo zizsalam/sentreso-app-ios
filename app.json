@@ -2,14 +2,14 @@
   "expo": {
     "name": "Sentreso Finance",
     "slug": "sentreso-finance",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sentreso",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSAppTransportSecurity": {
@@ -21,7 +21,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.zizsalam.sentresofinance",
-      "buildNumber": "25"
+      "buildNumber": "93"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +29,7 @@
         "backgroundColor": "#ffffff"
       },
       "icon": "./assets/images/icon.png",
+      "versionCode": 93,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
@@ -48,11 +49,23 @@
     "experiments": {
       "typedRoutes": true
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/98d358f0-9c1a-4f1d-8df4-68c3da5e331d"
+    },
+    "runtimeVersion": "1.2.0",
     "extra": {
       "router": {},
       "eas": {
         "projectId": "98d358f0-9c1a-4f1d-8df4-68c3da5e331d"
-      }
+      },
+      "supabaseUrl": "process.env.EXPO_PUBLIC_SUPABASE_URL",
+      "supabaseAnonKey": "process.env.EXPO_PUBLIC_SUPABASE_ANON",
+      "game_mode_v1": "true",
+      "gie_mode": "true",
+      "gie_exports": "true"
     }
   }
 }

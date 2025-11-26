@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, TextInput } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, TextInput, AppState } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { TransactionProvider, useTransactions } from '@/contexts/TransactionContext';
 import { UserProvider, useUserDetails } from '@/contexts/UserContext';
+import { AuthManagerProvider } from '@/contexts/AuthManager';
 import { TrendingUp, ArrowUpRight, ArrowDownLeft, ChartBar as BarChart3, Plus, Mic } from 'lucide-react-native';
 // @ts-ignore: No type definitions for react-native-voice
 import Voice from 'react-native-voice';
+import { supabase } from '@/services/supabaseClient';
+import { router } from 'expo-router';
+import { initAnalytics, track } from '@/src/analytics/posthog';
+import { drain } from '@/src/offline/txnQueue';
 
 type Screen = 'home' | 'add' | 'voice' | 'analytics' | 'transactions' | 'edit';
 
@@ -268,10 +274,16 @@ function AddScreen({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.typeToggle, type === 'income' && styles.typeToggleActive]}
+              style={[
+                styles.typeToggle,
+                type === 'income' && styles.typeToggleActiveIncome
+              ]}
               onPress={() => setType('income')}
             >
-              <Text style={[styles.typeToggleText, type === 'income' && styles.typeToggleTextActive]}>
+              <Text style={[
+                styles.typeToggleText,
+                type === 'income' && styles.typeToggleTextActiveIncome
+              ]}>
                 Revenu
               </Text>
             </TouchableOpacity>
@@ -492,10 +504,16 @@ function VoiceScreen({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
 
             <View style={styles.typeToggleContainer}>
               <TouchableOpacity
-                style={[styles.typeToggle, type === 'income' && styles.typeToggleActive]}
+                style={[
+                  styles.typeToggle,
+                  type === 'income' && styles.typeToggleActiveIncome
+                ]}
                 onPress={() => setType('income')}
               >
-                <Text style={[styles.typeToggleText, type === 'income' && styles.typeToggleTextActive]}>
+                <Text style={[
+                  styles.typeToggleText,
+                  type === 'income' && styles.typeToggleTextActiveIncome
+                ]}>
                   💰 Revenu
                 </Text>
               </TouchableOpacity>
@@ -510,7 +528,7 @@ function VoiceScreen({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>💵 Montant (FCFA) *</Text>
+            <Text style={styles.inputLabel}>Montant (FCFA) *</Text>
               <TextInput
                 style={styles.textInput}
                 value={amount}
@@ -900,6 +918,8 @@ function AppContent() {
   const { userDetails, isLoading } = useUserDetails();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Auth state management moved to AuthManager (to be created)
+
   useEffect(() => {
     if (!isLoading && !userDetails) {
       setShowOnboarding(true);
@@ -944,13 +964,31 @@ function AppContent() {
   );
 }
 
+import { Stack } from 'expo-router';
+
 export default function App() {
+  useEffect(() => {
+    initAnalytics();
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') drain(track);
+    });
+    const netUnsub = NetInfo.addEventListener((state) => {
+      if (state.isConnected) drain(track);
+    });
+    return () => {
+      sub.remove();
+      netUnsub();
+    };
+  }, []);
+
   return (
-    <TransactionProvider>
-      <UserProvider>
-        <AppContent />
-      </UserProvider>
-    </TransactionProvider>
+    <AuthManagerProvider>
+      <TransactionProvider>
+        <UserProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </UserProvider>
+      </TransactionProvider>
+    </AuthManagerProvider>
   );
 }
 
@@ -1302,6 +1340,14 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  typeToggleActiveIncome: {
+    backgroundColor: '#DCFCE7',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   typeToggleText: {
     fontSize: 16,
     fontWeight: '600',
@@ -1309,6 +1355,9 @@ const styles = StyleSheet.create({
   },
   typeToggleTextActive: {
     color: '#1F2937',
+  },
+  typeToggleTextActiveIncome: {
+    color: '#059669',
   },
   inputGroup: {
     marginBottom: 20,

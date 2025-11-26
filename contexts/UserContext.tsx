@@ -7,6 +7,8 @@ interface UserDetails {
   name: string;
   phone: string;
   email?: string;
+  userType?: 'merchant' | 'GIE' | 'VE';
+  address?: string; // Adresse du GIE/Association
 }
 
 interface UserContextType {

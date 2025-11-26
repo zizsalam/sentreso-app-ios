@@ -1,7 +1,14 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Plus, Mic, ChartBar as BarChart3 } from 'lucide-react-native';
+import { Chrome as Home, Plus, Mic, ChartBar as BarChart3, Users, Bell, MessageSquare } from 'lucide-react-native';
+import { getFlag } from '@/src/featureFlags';
+import { useUserDetails } from '@/contexts/UserContext';
 
 export default function TabLayout() {
+  const game = getFlag('game_mode_v1');
+  const { userDetails } = useUserDetails();
+  // Only enable GIE mode if userType is explicitly GIE (ignore feature flag for security)
+  const gieMode = userDetails?.userType === 'GIE';
+  const veMode = userDetails?.userType === 'VE';
   return (
     <Tabs
       screenOptions={{
@@ -65,6 +72,48 @@ export default function TabLayout() {
           ),
         }}
       />
+      {gieMode && (
+        <Tabs.Screen
+          name="meeting"
+          options={{
+            title: 'Réunion',
+            tabBarIcon: ({ size, color }) => (
+              <Users size={22} color={color} />
+            ),
+          }}
+        />
+      )}
+      {veMode && (
+        <>
+          <Tabs.Screen
+            name="groups"
+            options={{
+              title: 'Groupes',
+              tabBarIcon: ({ size, color }) => (
+                <Users size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="reminders"
+            options={{
+              title: 'Rappels',
+              tabBarIcon: ({ size, color }) => (
+                <Bell size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="messages"
+            options={{
+              title: 'Messages',
+              tabBarIcon: ({ size, color }) => (
+                <MessageSquare size={22} color={color} />
+              ),
+            }}
+          />
+        </>
+      )}
     </Tabs>
   );
 }

@@ -43,20 +43,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔐 Auth state changed:', event, session?.user?.phone);
-        setState(prev => ({
-          ...prev,
-          session,
-          user: session?.user ?? null,
-          loading: false,
-        }));
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    // Auth state management moved to AuthManager (to be created)
+    // This will be replaced with centralized auth management
   }, []);
 
   const signIn = async (phone: string, password: string) => {
@@ -66,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // For now, we'll use email field with phone number
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${phone}@sentreso.local`, // Temporary workaround
+        email: `${phone}@temp.local`, // Phone number mapped to email
         password,
       });
 
@@ -191,7 +179,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const resetPassword = async (phone: string) => {
     try {
       setState(prev => ({ ...prev, loading: true }));
-      const { error } = await supabase.auth.resetPasswordForEmail(`${phone}@sentreso.local`, {
+      const { error } = await supabase.auth.resetPasswordForEmail(`${phone}@temp.local`, {
         redirectTo: 'sentreso://reset-password',
       });
 

@@ -2,12 +2,16 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput } from 'reac
 import { useState, useRef } from 'react';
 import { ArrowLeft, Phone, CircleCheck as CheckCircle, CreditCard as Edit3 } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { awardOnTxnConfirmed } from '@/src/game/engine';
 import { useTransactions } from '@/contexts/TransactionContext';
 
 export default function VoiceTab() {
   const { addTransaction } = useTransactions();
 
-  // Simple state for manual entry
+  // Voice recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [transcription, setTranscription] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -22,13 +26,72 @@ export default function VoiceTab() {
     return new Intl.NumberFormat('fr-FR').format(amount);
   };
 
-  // Fake recording - immediately show confirmation form
+  // Sample voice transcriptions for demo
+  const sampleTranscriptions = [
+    "Vente de 5000 francs à Moussa pour réparation téléphone",
+    "Achat de 2500 francs chez le pharmacien pour médicaments",
+    "Revenu de 15000 francs de Mame Fatou pour couture",
+    "Dépense de 800 francs pour transport en taxi",
+    "Vente de 3000 francs à Amadou pour réparation radio",
+    "Achat de 1200 francs au marché pour provisions",
+    "Revenu de 8000 francs de Fatou pour coiffure",
+    "Dépense de 600 francs pour recharge téléphone"
+  ];
+
+  // Enhanced fake recording with realistic simulation
   const startFakeRecording = () => {
-    setShowConfirmation(true);
-    // Auto-focus amount input
+    setIsRecording(true);
+    setTranscription('');
+
+    // Simulate recording for 3-4 seconds
     setTimeout(() => {
-      amountInputRef.current?.focus();
-    }, 100);
+      setIsRecording(false);
+      setIsProcessing(true);
+
+      // Simulate processing for 2 seconds
+      setTimeout(() => {
+        setIsProcessing(false);
+
+        // Generate random sample transcription
+        const randomTranscription = sampleTranscriptions[Math.floor(Math.random() * sampleTranscriptions.length)];
+        setTranscription(randomTranscription);
+
+        // Auto-parse the transcription
+        parseTranscription(randomTranscription);
+      }, 2000);
+    }, 3000 + Math.random() * 1000); // 3-4 seconds recording
+  };
+
+  // Parse transcription and fill form automatically
+  const parseTranscription = (text: string) => {
+    // Extract amount (look for numbers)
+    const amountMatch = text.match(/(\d+(?:\s*\d+)*)/);
+    if (amountMatch) {
+      setAmount(amountMatch[1].replace(/\s/g, ''));
+    }
+
+    // Determine type based on keywords
+    const incomeKeywords = ['vente', 'revenu', 'reçu', 'payé par'];
+    const expenseKeywords = ['achat', 'dépense', 'payé pour', 'acheté'];
+
+    const lowerText = text.toLowerCase();
+    if (incomeKeywords.some(keyword => lowerText.includes(keyword))) {
+      setType('income');
+    } else if (expenseKeywords.some(keyword => lowerText.includes(keyword))) {
+      setType('expense');
+    }
+
+    // Extract client name (after "à" or "pour")
+    const clientMatch = text.match(/(?:à|pour)\s+([A-Za-z\s]+?)(?:\s+pour|\s+de|$)/);
+    if (clientMatch) {
+      setClient(clientMatch[1].trim());
+    }
+
+    // Set description (full transcription)
+    setDescription(text);
+
+    // Show confirmation form
+    setShowConfirmation(true);
   };
 
   // Save transaction
@@ -50,6 +113,7 @@ export default function VoiceTab() {
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
     };
     addTransaction(newTransaction);
+    try { void awardOnTxnConfirmed({ type: newTransaction.type }); } catch {}
     setLastCallResult({
       ...newTransaction,
       client: client.trim() || 'Non spécifié'
@@ -66,6 +130,9 @@ export default function VoiceTab() {
     setDescription('');
     setClient('');
     setType('expense');
+    setIsRecording(false);
+    setIsProcessing(false);
+    setTranscription('');
   };
 
   // Success screen
@@ -140,10 +207,16 @@ export default function VoiceTab() {
 
           <View style={styles.typeSelector}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'income' && styles.typeButtonActive]}
+              style={[
+                styles.typeButton,
+                type === 'income' && styles.typeButtonActiveIncome
+              ]}
               onPress={() => setType('income')}
             >
-              <Text style={[styles.typeButtonText, type === 'income' && styles.typeButtonTextActive]}>
+              <Text style={[
+                styles.typeButtonText,
+                type === 'income' && styles.typeButtonTextActiveIncome
+              ]}>
                 💰 Revenu
               </Text>
             </TouchableOpacity>
@@ -221,15 +294,63 @@ export default function VoiceTab() {
 
       <View style={styles.content}>
         <View style={{ alignItems: 'center', marginVertical: 32 }}>
-          <TouchableOpacity
-            style={styles.recordingButton}
-            onPress={startFakeRecording}
-          >
-            <Phone size={40} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.instructionTitle}>
-            Appuyez pour commencer
-          </Text>
+          {/* Recording States */}
+          {!isRecording && !isProcessing && !transcription && (
+            <>
+              <TouchableOpacity
+                style={styles.recordingButton}
+                onPress={startFakeRecording}
+              >
+                <Phone size={40} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text style={styles.instructionTitle}>
+                Appuyez pour commencer l'enregistrement
+              </Text>
+            </>
+          )}
+
+          {isRecording && (
+            <>
+              <View style={[styles.recordingButton, styles.recordingActive]}>
+                <Phone size={40} color="#FFFFFF" />
+              </View>
+              <Text style={styles.instructionTitle}>
+                🎤 Enregistrement en cours...
+              </Text>
+              <Text style={styles.instructionSubtext}>
+                Parlez clairement dans votre téléphone
+              </Text>
+            </>
+          )}
+
+          {isProcessing && (
+            <>
+              <View style={[styles.recordingButton, styles.processingActive]}>
+                <Text style={styles.processingIcon}>⚡</Text>
+              </View>
+              <Text style={styles.instructionTitle}>
+                🔄 Traitement en cours...
+              </Text>
+              <Text style={styles.instructionSubtext}>
+                Conversion de votre voix en texte
+              </Text>
+            </>
+          )}
+
+          {transcription && !showConfirmation && (
+            <>
+              <View style={styles.transcriptionCard}>
+                <Text style={styles.transcriptionTitle}>🎯 Transcription détectée:</Text>
+                <Text style={styles.transcriptionResult}>"{transcription}"</Text>
+                <TouchableOpacity
+                  style={styles.useTranscriptionButton}
+                  onPress={() => setShowConfirmation(true)}
+                >
+                  <Text style={styles.useTranscriptionButtonText}>Utiliser cette transcription</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
           <Text style={styles.instructionText}>
             Simulez une transaction vocale
           </Text>
@@ -563,6 +684,14 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  typeButtonActiveIncome: {
+    backgroundColor: '#DCFCE7',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   typeButtonText: {
     fontSize: 14,
     fontWeight: '500',
@@ -570,6 +699,10 @@ const styles = StyleSheet.create({
   },
   typeButtonTextActive: {
     color: '#1F2937',
+    fontWeight: '600',
+  },
+  typeButtonTextActiveIncome: {
+    color: '#059669',
     fontWeight: '600',
   },
   inputGroup: {
@@ -753,5 +886,66 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
+  },
+  // New Recording State Styles
+  recordingActive: {
+    backgroundColor: '#EF4444',
+    transform: [{ scale: 1.1 }],
+  },
+  processingActive: {
+    backgroundColor: '#6366F1',
+    transform: [{ scale: 1.1 }],
+  },
+  processingIcon: {
+    fontSize: 32,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  instructionSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  transcriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    width: '100%',
+    marginTop: 20,
+  },
+  transcriptionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  transcriptionResult: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
+    marginBottom: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  useTranscriptionButton: {
+    backgroundColor: '#10B981',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  useTranscriptionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

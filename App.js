@@ -1,6 +1,9 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View } from 'react-native';
+import { Text, View, AppState } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
+import { drain } from './src/offline/txnQueue';
+import { initAnalytics, track } from './src/analytics/posthog';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,6 +16,20 @@ function StaticScreen() {
 }
 
 export default function App() {
+  initAnalytics();
+  // background sync triggers
+  React.useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') drain(track);
+    });
+    const net = NetInfo.addEventListener((state) => {
+      if (state.isConnected) drain(track);
+    });
+    return () => {
+      sub.remove();
+      net();
+    };
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator>
