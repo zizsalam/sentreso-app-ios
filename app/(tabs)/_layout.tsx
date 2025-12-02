@@ -1,14 +1,17 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Plus, Mic, ChartBar as BarChart3, Users, Bell, MessageSquare } from 'lucide-react-native';
+import { Chrome as Home, Plus, Mic, ChartBar as BarChart3, Users, Bell, Settings } from 'lucide-react-native';
 import { getFlag } from '@/src/featureFlags';
 import { useUserDetails } from '@/contexts/UserContext';
 
 export default function TabLayout() {
+  const { userDetails, isLoading } = useUserDetails();
   const game = getFlag('game_mode_v1');
-  const { userDetails } = useUserDetails();
-  // Only enable GIE mode if userType is explicitly GIE (ignore feature flag for security)
-  const gieMode = userDetails?.userType === 'GIE';
-  const veMode = userDetails?.userType === 'VE';
+
+  // Prevent flicker during loading
+  if (isLoading) return null;
+
+  const type = userDetails?.userType;
+
   return (
     <Tabs
       screenOptions={{
@@ -36,57 +39,19 @@ export default function TabLayout() {
           marginBottom: 2,
         },
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Accueil',
-          tabBarIcon: ({ size, color }) => (
-            <Home size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="add"
-        options={{
-          title: 'Ajouter',
-          tabBarIcon: ({ size, color }) => (
-            <Plus size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="voice"
-        options={{
-          title: 'Vocal',
-          tabBarIcon: ({ size, color }) => (
-            <Mic size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: 'Stats',
-          tabBarIcon: ({ size, color }) => (
-            <BarChart3 size={22} color={color} />
-          ),
-        }}
-      />
-      {gieMode && (
-        <Tabs.Screen
-          name="meeting"
-          options={{
-            title: 'Réunion',
-            tabBarIcon: ({ size, color }) => (
-              <Users size={22} color={color} />
-            ),
-          }}
-        />
-      )}
-      {veMode && (
+      {type === 'VE' && (
         <>
           <Tabs.Screen
-            name="groups"
+            name="ve-dashboard"
+            options={{
+              title: 'Accueil',
+              tabBarIcon: ({ size, color }) => (
+                <Home size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="ve-groups"
             options={{
               title: 'Groupes',
               tabBarIcon: ({ size, color }) => (
@@ -95,7 +60,7 @@ export default function TabLayout() {
             }}
           />
           <Tabs.Screen
-            name="reminders"
+            name="ve-reminders"
             options={{
               title: 'Rappels',
               tabBarIcon: ({ size, color }) => (
@@ -104,11 +69,146 @@ export default function TabLayout() {
             }}
           />
           <Tabs.Screen
-            name="messages"
+            name="settings"
             options={{
-              title: 'Messages',
+              title: 'Paramètres',
               tabBarIcon: ({ size, color }) => (
-                <MessageSquare size={22} color={color} />
+                <Settings size={22} color={color} />
+              ),
+            }}
+          />
+        </>
+      )}
+
+      {type === 'merchant' && (
+        <>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Accueil',
+              tabBarIcon: ({ size, color }) => (
+                <Home size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="add"
+            options={{
+              title: 'Ajouter',
+              tabBarIcon: ({ size, color }) => (
+                <Plus size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="voice"
+            options={{
+              title: 'Vocal',
+              tabBarIcon: ({ size, color }) => (
+                <Mic size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="analytics"
+            options={{
+              title: 'Stats',
+              tabBarIcon: ({ size, color }) => (
+                <BarChart3 size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: 'Paramètres',
+              tabBarIcon: ({ size, color }) => (
+                <Settings size={22} color={color} />
+              ),
+            }}
+          />
+        </>
+      )}
+
+      {type === 'GIE' && (
+        <>
+          <Tabs.Screen
+            name="gie-dashboard"
+            options={{
+              title: 'Accueil',
+              tabBarIcon: ({ size, color }) => (
+                <Home size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="gie-members"
+            options={{
+              title: 'Membres',
+              tabBarIcon: ({ size, color }) => (
+                <Users size={22} color={color} />
+              ),
+            }}
+          />
+          {game && (
+            <Tabs.Screen
+              name="meeting"
+              options={{
+                title: 'Réunion',
+                tabBarIcon: ({ size, color }) => (
+                  <Users size={22} color={color} />
+                ),
+              }}
+            />
+          )}
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: 'Paramètres',
+              tabBarIcon: ({ size, color }) => (
+                <Settings size={22} color={color} />
+              ),
+            }}
+          />
+        </>
+      )}
+
+      {/* Fallback for users without userType */}
+      {!type && (
+        <>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Accueil',
+              tabBarIcon: ({ size, color }) => (
+                <Home size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="add"
+            options={{
+              title: 'Ajouter',
+              tabBarIcon: ({ size, color }) => (
+                <Plus size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="voice"
+            options={{
+              title: 'Vocal',
+              tabBarIcon: ({ size, color }) => (
+                <Mic size={22} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="analytics"
+            options={{
+              title: 'Stats',
+              tabBarIcon: ({ size, color }) => (
+                <BarChart3 size={22} color={color} />
               ),
             }}
           />
